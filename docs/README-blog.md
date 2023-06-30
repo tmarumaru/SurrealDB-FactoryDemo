@@ -72,7 +72,7 @@
 
 ここで使用した全てのソースコードは、以下のgithub リポジトリへ格納しています.  
 
-[https://github.com/tmarumaru/manufacturing-line-dashboard-with-surrealdb.git](https://github.com/tmarumaru/manufacturing-line-dashboard-with-surrealdb.git)  
+[https://github.com/tmarumaru/SurrealDB-FactoryDemo](https://github.com/tmarumaru/SurrealDB-FactoryDemo)  
 
 ---  
 
