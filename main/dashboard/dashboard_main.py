@@ -1,12 +1,11 @@
 import asyncio
 import sys
-import traceback
 
 import streamlit as st
 
 from arguments_parser import Params, parse
 from dashboard.page1 import factory_dashboard
-from dashboard.page2 import production_work_history_view
+from dashboard.page2 import production_work_history_dashboard
 from dashboard.page3 import factory_chatbot
 
 PAGE1 = '全体状況'
@@ -27,7 +26,7 @@ async def main(param: Params):
         await factory_dashboard.run(param)
 
     elif selected_menu == PAGE2:
-        await production_work_history_view.run(param)
+        await production_work_history_dashboard.run(param)
 
     elif selected_menu == PAGE3:
         await factory_chatbot.run(param)

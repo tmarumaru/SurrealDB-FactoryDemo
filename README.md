@@ -1,4 +1,4 @@
-# Manufacturing Line Dashboard with Surrealdb  
+## グラフデータベースSurrealDBによる製造ラインのトレーサビリティシステム
   
 ## 概要
 
@@ -45,7 +45,7 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
 * ubuntu version 20.04
 * docker version 23.0.4, build 3e7cbfd  
 * SurrealDB image [surrealdb/surrealdb:latest](https://hub.docker.com/r/surrealdb/surrealdb)
-* factory-demo image [tmarumaru/factory-demo:v0.1](https://hub.docker.com/r/tmarumaru/factory-demo)
+* factory-demo image factory-demo:latest
 
 ---  
 
@@ -57,6 +57,12 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
 
     ``` shell
     git clone  https://github.com/tmarumaru/manufacturing-line-dashboard-with-surrealdb.git
+    ```
+
+1. docker image 作成
+
+    ``` shell
+    make
     ```
 
 1. ネットワーク作成  
@@ -202,6 +208,7 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
 
     * url: <http://localhost:8080>
   
+
 1. Docker containerの停止
 
     SurrealDBとDashboardのcontainerのIDを求め、docker stop コマンドでcontainerを停止してください.  
@@ -284,10 +291,12 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
   
 欠陥品は修理用貯蔵庫へ移動されますが、このグラフでは表示していません.  
 
-* 部品(仕掛品)の作業履歴  
+* SP01部品(仕掛品)の製造工程の流れ  
+  
     製造ラインpl001 ⇒ 貯蔵庫storage1 ⇒ 製造ラインpl002 ⇒ 貯蔵庫storage2 ⇒ 製造ラインpl003 ⇒ 貯蔵庫storage  
 
-* 製品(仕掛品)の作業履歴  
+* SP02製品(仕掛品)の製造工程の流れ  
+  
     製造ラインpl004 ⇒ 貯蔵庫storage4 ⇒ 製造ラインpl005 ⇒ 貯蔵庫storage5 ⇒ 製造ラインpl006 ⇒ 貯蔵庫storage6  
 
   
@@ -302,7 +311,7 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
 
 #### 仕掛品作業履歴、移動作業履歴  
 
-サイドメニューの「仕掛品選択」で選択した仕掛品だけの作業履歴、移動作業履歴の詳細を表示できます.
+サイドメニューの「仕掛品選択」で選択した仕掛品だけの作業履歴、移動作業履歴の詳細を表示されます.
   
 下図は製品(仕掛品) "P40011" の作業履歴、移動作業履歴の詳細です.  
   
@@ -316,6 +325,8 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
 
 #### 製品と部品の作業関連グラフデータ表示  
 
+サイドメニューの「仕掛品選択」で選択した仕掛品と関連するノードがグラフデータで表示されます.
+  
 "P40011" 製品と "S10014" 部品の作業と関連項目がフラグデータで表示されます.  
 表示するノードは以下です.  
 
@@ -323,7 +334,9 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
 |:-|:-|:-|  
 |製造ライン|pl001～pl006||  
 |貯蔵庫|storage1～storage6||  
-|仕掛品|部品、製品||  
+|製品|製品||  
+|部品|部品||  
+|欠陥品|欠陥が検知された製品または部品||  
 |作業|製造ラインの作業||  
 |移動作業|製造ライン、貯蔵庫間の移動作業||  
 |検査結果|作業の検査結果||  
@@ -334,7 +347,7 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
 <img src="./docs/images/db03-4.png" width="700"  >  
 
 
-### 製造ライン情報Chatbot
+### 製造ライン情報チャットボット
   
 日本語自然言語を使ってSurralDBの製造ライン情報を問合せするチャットボットです.  
 「問合せ」フィールドへ日本語で問合せ文を入力して「問合せ実行」ボンタを押下と「チャット」へ回答を表示します.  
@@ -473,29 +486,29 @@ root
 │   │   ├── graphic_data                                # matplotlib図形処理
 │   │   │   ├── graph_element_builder.py                # 図形要素ビルダ
 │   │   │   └── graph_elements.py                       # 図形要素定義
-│   │   ├── page1                                       # 全体状況画面
-│   │   │   └── factory_dashboard.py                    # ページ表示処理
-│   │   ├── page2                                       # 製造ライン作業履歴画面
+│   │   ├── page1                                       # 
+│   │   │   └── factory_dashboard.py                    # 全体状況画面
+│   │   ├── page2                                       # 
 │   │   │   ├── product_operation_view.py               # 製造ライン情報 グラフデータ表示処理
 │   │   │   ├── production_line_data_cache.py           # 製造ライン情報キャッシュ処理
 │   │   │   ├── production_lines_status_view.py         # 製品の作業履歴情報表示
-│   │   │   └── production_work_history_view.py         # ページ表示処理
-│   │   └── page3                                       # 製造ライン情報チャットボット画面
-│   │       ├── factory_chatbot.py                      # チャットボット処理
+│   │   │   └── production_work_history_dashboard.py    # 製造ライン作業履歴画面
+│   │   └── page3                                       # 
+│   │       ├── factory_chatbot.py                      # 製造ライン情報チャットボット画面
 │   │       └── prompt.py                               # GPT-3.5/GPT-4用プロンプト定義
-│   ├── helper                                          # SurrealDB用ヘルパー
+│   ├── helper                                          # 
 │   │   ├── db_helper.py                                # SurrealDB Client wrapper
 │   │   ├── factory_db_helper.py                        # 製造ライン情報アクセスヘルパー
 │   │   └── surrealdb_sql_def.py                        # SurrealQL 定義
-│   ├── importer                                        # インポータ
+│   ├── importer                                        # 
 │   │   ├── factory_data_import_manager.py              # インポート処理
 │   │   └── factory_data_reader.py                      # Jsonファイル解釈
 │   ├── main.py                                         # simulator/importer 起動起点
 │   ├── run_server.py                                   # IDEからのDashboard起動起点
-│   ├── simulator                                       # 製造ライン シミュレータ
+│   ├── simulator                                       # 
 │   │   ├── factory_model_builder.py                    # 工場モデルビルダ
 │   │   ├── factory_models.py                           # 工場モデル定義
-│   │   ├── factory_simulator.py                        # シミュレータ本体
+│   │   ├── factory_simulator.py                        # 製造ライン シミュレータ
 │   │   ├── process                                     # シミュレータ用プロセス
 │   │   │   ├── assembly_process.py                     # 組立製造ラインプロセス
 │   │   │   ├── awork_manager.py                        # 作業情報管理抽象クラス
@@ -517,6 +530,7 @@ root
 |:-|:-|:-|  
 |python|3.11.0||  
 |SurrealDB|v1.0.0-beta.9|[site](https://github.com/surrealdb/surrealdb)|  
+|simpy|1.12|[site](https://simpy.readthedocs.io/en/latest/index.html)|  
 |streamlit|1.22.0|[site](https://streamlit.io/)|  
 |streamlit-chat|0.0.2.2|[site](https://pypi.org/project/streamlit-chat/)|  
 |matplotlib|3.7.1|[site](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.pie.html)|  

@@ -1,12 +1,14 @@
 #!/bin/bash
 
+if test -f ".env"; then
 # load .env file
-set -o allexport
-source .env set
-set +o allexport
+  set -o allexport
+  source .env set
+  set +o allexport
+fi
 
 # Factory-demo image
-export IMAGE="tmarumaru/factory-demo:v0.1"
+export IMAGE="factory-demo"
 
 # SurrealDB hostname (Do not change)
 export SERVER="surrealdb"

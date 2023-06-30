@@ -221,12 +221,12 @@ class FactoryDBHelper(DBHelper):
                 else:
                     continue
                 for _n in [_r.get('in', None), _r.get('out', None)]:
-                    if not _n in _nodes:
+                    if _n not in _nodes:
                         _nodes.append(_n)
                         _found_nodes.append(_n)
 
             for _n in _found_nodes:
-                if not _n.split(':')[0] in EXCLUSION_TABLE_NAMES and (not _n in _traversed_nodes):
+                if not _n.split(':')[0] in EXCLUSION_TABLE_NAMES and (_n not in _traversed_nodes):
                     _relationships, _nodes, _traversed_nodes = \
                         await self.get_relationships_of_node(
                             node_id=_n,
@@ -247,5 +247,3 @@ class FactoryDBHelper(DBHelper):
         sql = GET_MEASUREMENTS_VALUE + ';'
         result = await self.exec_sql(sql=sql)
         return result
-
-

@@ -13,7 +13,7 @@ from openai.error import APIConnectionError, AuthenticationError
 from streamlit_chat import message
 
 from arguments_parser import Params
-from dashboard.page3.prompt import CONVERT_NL_TO_SURREALQL_PROMPT_jp, CONVERT_NL_TO_SURREALQL_PROMPT_en, \
+from dashboard.page3.prompt import CONVERT_NL_TO_SURREALQL_PROMPT_jp, \
     CONVERT_NL_TO_SURREALQL_MESSAGES_jp, ANALYZE_RESPONSE_PROMPT_jp
 from helper.factory_db_helper import FactoryDBHelper
 
@@ -38,7 +38,7 @@ def query(
     :return: GTPからの結果
     """
 
-    prompt = CONVERT_NL_TO_SURREALQL_PROMPT_jp if prompt_lang == '日本語' else CONVERT_NL_TO_SURREALQL_PROMPT_en
+    prompt = CONVERT_NL_TO_SURREALQL_PROMPT_jp
     prompt += "\n#" + payload.get("inputs", {}).get("text", "?")
     try:
         completions = openai.Completion.create(

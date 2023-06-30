@@ -1,12 +1,12 @@
 # Build用コンテナ
-FROM python:3.11-bullseye as builder
+FROM python:3.11.4-bookworm as builder
 
 WORKDIR /opt/app
 COPY requirements.txt /opt/app
 RUN pip3 install -r requirements.txt
 
 #　実行用コンテナ
-FROM python:3.11-slim-bullseye as runner
+FROM python:3.11.4-slim-bookworm as runner
 
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin/streamlit /usr/local/bin/streamlit

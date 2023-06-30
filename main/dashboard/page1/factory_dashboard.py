@@ -193,7 +193,7 @@ def show_manufacturing_metrics(
 def show_production_time_histograms(
         title: List[str],
         labels: List[str],
-        processing_times_list: List[{}]
+        production_times_list: List[{}]
 ) -> None:
     """
     製造平均時間、仕掛品の製造時間ヒストグラム、仕掛品の製造時間ヒストグラムを表示する
@@ -203,10 +203,10 @@ def show_production_time_histograms(
     container = st.container()
     cols = container.columns(col_layout, gap='medium')
     data_list: List[List[datetime.timedelta]] = []
-    for processing_times in processing_times_list:
+    for production_times in production_times_list:
         data_list.append(
-            [processing_times[key].get('delta')
-             for key in processing_times.keys() if processing_times[key].get('delta', None)]
+            [production_times[key].get('delta')
+             for key in production_times.keys() if production_times[key].get('delta', None)]
         )
 
     # 製造平均時間
@@ -373,7 +373,7 @@ def show_boxplot(
     plt.close()
 
 
-async def get_production_duration(
+async def get_production_times(
         client: FactoryDBHelper
 ) -> ({}, {}, {}):
     """
@@ -381,7 +381,7 @@ async def get_production_duration(
     :param client: SurrealDBヘルパ
     :return: (部品情報: {}, 製品情報: {})
     """
-    all_production_lines_processing_times: {str, []} = {}
+    all_production_times: {str, []} = {}
 
     # 部品製造工程情報を取得
     parts_processing_info = await client.get_production_time_records(
@@ -396,14 +396,14 @@ async def get_production_duration(
     )
 
     # 部品の先頭工程から最終工程までの製造時間を集計する
-    parts_processing_times = calculate_production_time(
+    parts_production_times = calculate_production_times(
         first_process=PARTS_FIRST_PROCESS,
         last_process=PARTS_LAST_PROCESS,
         work_info=parts_processing_info,
     )
 
     # 製品の先頭工程から最終工程までの製造時間を集計する
-    product_processing_times = calculate_production_time(
+    product_prodcution_times = calculate_production_times(
         first_process=PRODUCT_FIRST_PROCESS,
         last_process=PRODUCT_LAST_PROCESS,
         work_info=product_processing_info,
@@ -415,17 +415,17 @@ async def get_production_duration(
             last_process=production_line_id,
             first_process=production_line_id,
         )
-        all_production_lines_processing_times[production_line_id.split(':')[1]] = \
-            calculate_production_time(
+        all_production_times[production_line_id.split(':')[1]] = \
+            calculate_production_times(
                 first_process=production_line_id,
                 last_process=production_line_id,
                 work_info=processing_info,
             )
 
-    return parts_processing_times, product_processing_times, all_production_lines_processing_times
+    return parts_production_times, product_prodcution_times, all_production_times
 
 
-def calculate_production_time(
+def calculate_production_times(
         first_process: str,
         last_process: str,
         work_info: [],
@@ -438,12 +438,12 @@ def calculate_production_time(
     :return: 仕掛品毎の製造時間情報
     """
 
-    product_processing_times = {}
+    production_times = {}
     for work in work_info:
         product_id = work.get('product_id', None)
         production_line_id = work.get('production_line_id', None)
-        product_data = product_processing_times.get(product_id) \
-            if product_processing_times.get(product_id, None) else {}
+        product_data = production_times.get(product_id) \
+            if production_times.get(product_id, None) else {}
 
         if production_line_id == first_process == last_process:
             product_data['started_at'] = util.convert_utc_string_to_datetime(work.get('started_at', None))
@@ -456,11 +456,11 @@ def calculate_production_time(
             product_data['delta'] = product_data['ended_at'] - product_data['started_at']
         else:
             pass
-        product_processing_times[product_id] = product_data
-    return product_processing_times
+        production_times[product_id] = product_data
+    return production_times
 
 
-async def get_storage_duration(
+async def get_storage_dwell_times(
         client: FactoryDBHelper,
 ) -> {}:
     """
@@ -469,10 +469,10 @@ async def get_storage_duration(
     :return: 仕掛品貯蔵庫滞留時間
     """
     result = await client.get_transfer_work_histories()
-    return calculate_storage_time(transfer_work_histories=result) if result else {}
+    return calculate_storage_dwell_times(transfer_work_histories=result) if result else {}
 
 
-def calculate_storage_time(
+def calculate_storage_dwell_times(
         transfer_work_histories: {}
 ) -> {}:
     """
@@ -480,29 +480,29 @@ def calculate_storage_time(
     :param transfer_work_histories: 仕掛品移動情報
     :return: 仕掛品貯蔵庫滞留時間
     """
-    storage_duration = {}
+    storage_dwell_times = {}
     for work in transfer_work_histories:
         x = work.get('to_id')
         storage_id = work.get('to_id') if x.startswith('STORAGE:') else work.get('from_id')
         storage_id = storage_id.split(':')[1]
         product_id = work.get('product')
         timestamp = work.get('timestamp', None)
-        if storage_id not in storage_duration:
-            storage_duration[storage_id] = {}
-        if product_id not in storage_duration[storage_id]:
-            storage_duration[storage_id][product_id] = {
+        if storage_id not in storage_dwell_times:
+            storage_dwell_times[storage_id] = {}
+        if product_id not in storage_dwell_times[storage_id]:
+            storage_dwell_times[storage_id][product_id] = {
                 'storage_entry_time': None,
                 'storage_exit_time': None,
                 'delta': None,
             }
-        product_data = storage_duration[storage_id][product_id]
+        product_data = storage_dwell_times[storage_id][product_id]
         if work.get('to_id').startswith('STORAGE:'):
             product_data['storage_entry_time'] = util.convert_utc_string_to_datetime(timestamp) if timestamp else None
         else:
             product_data['storage_exit_time'] = util.convert_utc_string_to_datetime(timestamp) if timestamp else None
         if not product_data['delta'] and product_data['storage_entry_time'] and product_data['storage_exit_time']:
             product_data['delta'] = product_data['storage_exit_time'] - product_data['storage_entry_time']
-    return storage_duration
+    return storage_dwell_times
 
 
 async def run(
@@ -531,26 +531,26 @@ async def run(
         ) as client:
             production_yield = await client.get_production_yield()
             # measurements_values = await get_measurements_values(client=client)
-            parts_processing_times, product_processing_times, all_production_lines_processing_times = \
-                await get_production_duration(client=client)
-            storage_duration = await get_storage_duration(client=client)
+            parts_production_times, product_production_times, all_production_times = \
+                await get_production_times(client=client)
+            storage_dwell_times = await get_storage_dwell_times(client=client)
 
         production_data = get_production_data(production_yield=production_yield)
         st.session_state.production_data = production_data
-        st.session_state.parts_processing_times = parts_processing_times
-        st.session_state.product_processing_times = product_processing_times
-        st.session_state.all_production_lines_processing_times = all_production_lines_processing_times
-        st.session_state.storage_duration = storage_duration
+        st.session_state.parts_production_times = parts_production_times
+        st.session_state.product_production_times = product_production_times
+        st.session_state.all_production_times = all_production_times
+        st.session_state.storage_dwell_times = storage_dwell_times
 
     production_data = st.session_state.production_data
     if len(production_data) <= 0:
         st.write('### データが見つかりません')
         return
 
-    parts_processing_times = st.session_state.parts_processing_times
-    product_processing_times = st.session_state.product_processing_times
-    all_production_lines_processing_times = st.session_state.all_production_lines_processing_times
-    storage_duration = st.session_state.storage_duration
+    parts_production_times = st.session_state.parts_production_times
+    product_production_times = st.session_state.product_production_times
+    all_production_times = st.session_state.all_production_times
+    storage_dwell_times = st.session_state.storage_dwell_times
     selected_summary_view = True
 
     st.sidebar.write('製造ライン状況表示')
@@ -572,7 +572,7 @@ async def run(
         show_production_time_histograms(
             title=['製造時間分布', 'SP1部品 製造時間分布', 'SP2製品 製造時間分布'],
             labels=['SP1部品', 'SP2製品'],
-            processing_times_list=[parts_processing_times, product_processing_times],
+            production_times_list=[parts_production_times, product_production_times],
         )
         st.write('---')
 
@@ -588,7 +588,7 @@ async def run(
             show_production_time_histograms(
                 title=['製造時間分布', '製造時間分布'],
                 labels=[data.production_line],
-                processing_times_list=[all_production_lines_processing_times.get(data.production_line)],
+                production_times_list=[all_production_times.get(data.production_line)],
             )
             st.write('---')
 
@@ -598,13 +598,13 @@ async def run(
         st.write("### 貯蔵庫仕掛品滞留時間")
 
     for storage_id in ['storage1', 'storage2', 'storage3', 'storage4', 'storage5']:
-        storage_data = storage_duration.get(storage_id)
+        storage_data = storage_dwell_times.get(storage_id)
         if selected_storage == 'all' or storage_id == selected_storage:
             st.write(f"#### 貯蔵庫: {storage_id}")
             show_production_time_histograms(
                 title=['滞留時間分布', '滞留時間分布'],
                 labels=[storage_id],
-                processing_times_list=[storage_data],
+                production_times_list=[storage_data],
             )
             st.write('---')
 
