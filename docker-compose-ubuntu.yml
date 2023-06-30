@@ -1,0 +1,17 @@
+version: '3.9'
+services:
+  ubuntu:
+    container_name: ubuntu
+    image: ubuntu:latest
+    tty: true
+    environment:
+      - LANG=ja_JP.UTF-8
+      - PYTHONIOENCODING=utf_8
+
+    networks:
+      - default
+      - surrealdb-net
+
+networks:
+  surrealdb-net:
+    external: true

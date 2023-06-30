@@ -1,0 +1,38 @@
+version: '3.9'
+services:
+  dashboard:
+    container_name: dashboard
+    image: "${IMAGE}"
+    environment:
+      - LANG="ja_JP.UTF-8"
+      - PYTHONIOENCODING="utf_8"
+      - OPENAI_KEY=${OPENAI_KEY}
+
+    command: [ "streamlit",
+               "run",
+               "/opt/app/main/dashboard/dashboard_main.py",
+               "--browser.serverAddress=0.0.0.0",
+               "--server.port=${STREAMLIT_PORT}",
+               "--",
+               "--server", "${SERVER}",
+               "--port", "${PORT}",
+               "--user", "${USER}",
+               "--pw", "${PW}",
+               "--database", "${DATABASE}",
+               "--namespace", "${NAMESPACE}" ]
+    ports:
+      - "${STREAMLIT_PORT}:${STREAMLIT_PORT}"
+
+    networks:
+      - default
+      - surrealdb-net
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2000m
+
+networks:
+  surrealdb-net:
+    external: true

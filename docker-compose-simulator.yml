@@ -1,0 +1,31 @@
+version: '3.9'
+services:
+  simulator:
+    container_name: simulator
+    image: "${IMAGE}"
+    environment:
+      - LANG=ja_JP.UTF-8
+      - PYTHONIOENCODING=utf_8
+
+    command: ["python",
+              "/opt/app/main/main.py",
+              "simulate",
+              '--clock', "${CLOCK}",
+              "--file", "${FACTORY_DATA_JSON_FILE_PATH}" ]
+
+    volumes:
+      - type: bind
+        source: "${SOURCE_DIR}"
+        target: "${MOUNT_POINT}"
+    networks:
+      - surrealdb-net
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2000m
+
+networks:
+  surrealdb-net:
+    external: true

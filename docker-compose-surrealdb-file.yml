@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  surrealdb:
+    container_name: surrealdb
+    image: surrealdb/surrealdb:latest
+    command: start --log debug --user ${USER} --pass ${PW}  file://database
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - type: bind
+        source: "${DATABASE_DIR}"
+        target: /database
+
+    networks:
+      - surrealdb-net
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2000m
+
+networks:
+  surrealdb-net:
+    external: true
+
+
