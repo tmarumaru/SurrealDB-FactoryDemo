@@ -56,7 +56,7 @@ WSL2 + ubuntu 20.04 と同等のDockerが動作する環境であれば動作可
     任意のディレクトリへリポジトリを格納する.  
 
     ``` shell
-    git clone  https://github.com/tmarumaru/manufacturing-line-dashboard-with-surrealdb.git
+    git clone  https://github.com/tmarumaru/SurrealDB-FactoryDemo.git
     ```
 
 1. docker image 作成
