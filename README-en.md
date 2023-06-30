@@ -54,7 +54,7 @@ It should work in an environment where Docker equivalent to ubuntu 20.04 works, 
 1. Get git repository
 
     ``` shell
-    git clone  https://github.com/tmarumaru/manufacturing-line-dashboard-with-surrealdb.git
+    git clone  https://github.com/tmarumaru/SurrealDB-FactoryDemo.git
     ```
 
 1. Create the Factory-demo image
